@@ -21,6 +21,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.s1ck.gdl.exceptions.InvalidReferenceException;
 import org.s1ck.gdl.model.*;
 import org.s1ck.gdl.model.comparables.ElementSelector;
+import org.s1ck.gdl.model.functions.list.KeysFunction;
+import org.s1ck.gdl.model.functions.list.ListFunction;
 import org.s1ck.gdl.model.predicates.booleans.And;
 import org.s1ck.gdl.model.predicates.expressions.Comparison;
 import org.s1ck.gdl.model.predicates.Predicate;
@@ -30,6 +32,7 @@ import org.s1ck.gdl.model.predicates.booleans.Xor;
 import org.s1ck.gdl.model.comparables.ComparableExpression;
 import org.s1ck.gdl.model.comparables.Literal;
 import org.s1ck.gdl.model.comparables.PropertySelector;
+import org.s1ck.gdl.model.predicates.expressions.ForEach;
 import org.s1ck.gdl.utils.Comparator;
 
 import java.util.*;
@@ -375,6 +378,24 @@ class GDLLoader extends GDLBaseListener {
     addPredicates(Collections.singletonList(currentPredicates.pop()));
   }
 
+  @Override
+  public void exitForeach(GDLParser.ForeachContext ctx) {
+    ListFunction function = null;
+
+    if(ctx.foreachSet().listFunction().keys() != null) {
+      function = new KeysFunction(ctx.foreachSet().listFunction().keys().vertex().getText());
+    }
+
+    ForEach forEachPredicate = new ForEach(
+            ctx.foreachSet().Identifier().getText(),
+            function);
+    addPredicates(Collections.singletonList(forEachPredicate));
+    System.out.println("Exit for each... with predicates: "
+            + (getPredicates().isPresent()
+                ? getPredicates().get().getVariables() + " | " + Arrays.toString(getPredicates().get().getArguments())
+                : "not present"));
+  }
+
   /**
    * Builds a {@code Comparison} expression from comparison context
    *
@@ -627,7 +648,12 @@ class GDLLoader extends GDLBaseListener {
     if (propertiesContext != null) {
       Map<String, Object> properties = new HashMap<>();
       for (GDLParser.PropertyContext property : propertiesContext.property()) {
-        properties.put(property.Identifier().getText(), getPropertyValue(property.literal()));
+        if(property.literal() != null) {
+          properties.put(property.Identifier(0).getText(), getPropertyValue(property.literal()));
+        } else if(property.Identifier().size() > 1) {
+          properties.put(property.Identifier(0).getText(), property.Identifier(1).getSymbol().getText());
+        }
+
       }
       return properties;
     }

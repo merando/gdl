@@ -23,7 +23,7 @@ database
     ;
 
 elementList
-    : (definition ','?)+ | query
+    : (definition ','?)+ | query | foreach
     ;
 
 definition
@@ -36,7 +36,7 @@ graph
     ;
 
 query
-    : match where*
+    : match where* foreach*
     ;
 
 match
@@ -74,6 +74,7 @@ properties
 
 property
     : Identifier Colon literal
+    | Identifier Colon Identifier
     ;
 
 label
@@ -123,6 +124,30 @@ literal
     | FloatingPointLiteral
     | Null
     ;
+
+//foreach : ('foreach' | 'FOREACH') '(' ( foreachSet '|' ('create' | 'CREATE') creationPath)')' ;
+foreach : ('foreach' | 'FOREACH') '(' ( foreachSet '|' ('create' | 'CREATE') path)')' ;
+
+foreachSet : Identifier ('in' | 'IN') listFunction ;
+
+listFunction : keys ;
+
+keys: 'keys' vertex ;
+
+//creationPath : creationVertex (creationEdge creationVertex)* ;
+//
+//creationVertex : '(' header creationProperties? ')' ;
+//
+//creationEdge
+//  : '<-' creationEdgeBody? '-'    #incomingCreationEdge
+//  | '-' creationEdgeBody? '->'    #outgoingCreationEdge
+//  ;
+//
+//creationEdgeBody : '[' header creationProperties? ']' ;
+//
+//creationProperties : '{' (creationProperty (',' creationProperty)*)? '}' ;
+//
+//creationProperty : Identifier Colon Identifier ;
 
 //-------------------------------
 // String Literal
@@ -301,5 +326,9 @@ COMMENT
 
 LINE_COMMENT
     : '//' ~[\r\n]* -> skip
+    ;
+
+In
+    : ('in' | 'IN')
     ;
 

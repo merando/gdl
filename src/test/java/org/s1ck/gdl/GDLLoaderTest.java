@@ -502,6 +502,21 @@ public class GDLLoaderTest {
   }
 
   // --------------------------------------------------------------------------------------------
+  //  FOREACH tests
+  // --------------------------------------------------------------------------------------------
+  @Test
+  public void testForEachClause() {
+    GDLLoader loader = getLoaderFromGDLString("MATCH (p) FOREACH (k in keys(p)| CREATE (:Attr {attrKey:k})<-[:hasAttribute]-(p) )");
+//    GDLLoader loader = getLoaderFromGDLString("FOREACH (k in keys(p)| CREATE (:Attr {attrKey: k})<-[:hasAttribute]-(p) )");
+
+    System.out.println("Vertices: " + loader.getVertexCache());
+    System.out.println("Edges: " + loader.getEdgeCache());
+
+
+    //    validateCollectionSizes(loader, 0, 2, 0);
+  }
+
+  // --------------------------------------------------------------------------------------------
   //  Combined tests
   // --------------------------------------------------------------------------------------------
 
